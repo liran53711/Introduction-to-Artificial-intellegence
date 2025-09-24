@@ -377,7 +377,7 @@ class PacmanRules:
     def consume(position, state):
         x, y = position
         # Eat food
-        if state.data.food[x][y]:
+        if state.data.food[x][y]:#this is a 2D bool matrix that represent is there food st one place
             state.data.scoreChange += 10
             state.data.food = state.data.food.copy()
             state.data.food[x][y] = False
