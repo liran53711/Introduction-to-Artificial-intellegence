@@ -168,7 +168,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         res.sort(key = lambda k:k[1])
         return res[-1][0]
 
-        util.raiseNotDefined()
+
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -240,7 +240,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         return best_action
 
-        util.raiseNotDefined()
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -300,7 +300,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
 
 
-        util.raiseNotDefined()
+
 
 def betterEvaluationFunction(currentGameState: GameState):
     """
@@ -311,7 +311,56 @@ def betterEvaluationFunction(currentGameState: GameState):
     """
     "*** YOUR CODE HERE ***"
 
-    util.raiseNotDefined()
+    pacmanPositin = currentGameState.getPacmanPosition()#糖豆人的位置
+    food = currentGameState.getFood()#食物的剩余量以及位置
+    ghostStates = currentGameState.getGhostStates()#幽灵的数量以及状态
+    scaredTime = [ghostState.scaredTimer for ghostState in ghostStates]#幽灵的惊吓时间
+    capsules = currentGameState.getCapsules()#胶囊的数量
+
+    basicScore = currentGameState.getScore()
+
+    foodList = food.asList()
+    foodScore = 0
+    if foodList:
+        minFoodDistance = min([manhattanDistance(pacmanPositin,food) for food in foodList])
+
+        foodScore = - minFoodDistance
+    else:
+        foodScore = 1000
+
+    foodLeftPenalty = -len(foodList) - 20 / (len(foodList)+1)
+
+    capsuleScore = 0
+    if capsules:
+        minCapsuleDistance = min(manhattanDistance(pacmanPositin,capsule) for capsule in capsules)
+        capsuleScore = 20/(minCapsuleDistance) - 100 * len(capsules) #capsule 不为空才会进循环，所以不用+1
+
+    else:
+        capsuleScore = 1000
+
+    ghostScore = 0
+    activeGhosts = 0
+
+    for i, ghostState in enumerate(ghostStates):
+        ghostPosition = ghostState.getPosition()
+        distanceToGhost = manhattanDistance(pacmanPositin, ghostPosition)
+
+        if scaredTime[i]>0:
+            if distanceToGhost > scaredTime[i]:
+                ghostScore += 1000/(distanceToGhost + 1)#防止除以 0
+        else:
+            activeGhosts += 1
+            if distanceToGhost <=1 :
+                ghostScore -= 1000
+            if distanceToGhost <=2:
+                ghostScore -= 5
+            if distanceToGhost <=3:
+                ghostScore -= 1
+
+    comprehensiveEvaluation = basicScore + foodScore + capsuleScore + ghostScore + foodLeftPenalty
+    return comprehensiveEvaluation
+
+
 
 # Abbreviation
 better = betterEvaluationFunction
