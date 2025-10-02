@@ -114,7 +114,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def getAction(self, gameState: GameState):
         """
-        Returns the minimax action from the current gameState using self.depth
+        Returns the minimax
+        action
+        from the current gameState using self.depth
         and self.evaluationFunction.
 
         Here are some method calls that might be useful when implementing minimax.
@@ -140,7 +142,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         def term ( state , depth ):
             return state.isWin() or state.isLose() or depth == self.depth
+            #终止条件的判断，如果出现一方输赢或者深度达到要求，就返回 true
+
         def min_value(state , depth , ghost_index):
+            #state是
             if term(state,depth):
                 return self.evaluationFunction(state)
             v = float('inf')
@@ -158,11 +163,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
             for action in state.getLegalActions(0):
                 v = max ( v, min_value ( state.generateSuccessor ( 0, action ) , depth,1))#pacman走完之后深度不变，下面轮到ghost走
             return v
-        res = [(action,min_value(gameState.generateSuccessor(0,action),0,1))for action in gameState.getLegalActions(0)]
+
+        res = [(action,min_value(gameState.generateSuccessor(0,action),0,1) ) for action in gameState.getLegalActions(0)]
         res.sort(key = lambda k:k[1])
         return res[-1][0]
 
         util.raiseNotDefined()
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -174,6 +181,65 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+        best_value = float('-inf')
+        best_action = None
+        alpha = float('-inf')
+        beta = float('inf')
+
+        ghost_indexs = [i for i in range(1, gameState.getNumAgents())]
+
+        def term(state, depth):
+            return state.isWin() or state.isLose() or depth == self.depth
+
+        def min_value(state, depth, ghost_index, alpha, beta):
+            if term(state, depth):
+                return self.evaluationFunction(state)
+
+            v = float('inf')
+            for action in state.getLegalActions(ghost_index):
+                if ghost_index == ghost_indexs[-1]:
+                    successor_value = max_value(state.generateSuccessor(ghost_index, action), depth + 1, alpha, beta)
+                else:
+                    successor_value = min_value(state.generateSuccessor(ghost_index, action), depth, ghost_index + 1,
+                                                alpha, beta)
+
+                v = min(v, successor_value)
+
+                if v < alpha:
+                    return v
+
+                beta = min(beta, v)
+
+            return v
+
+        def max_value(state, depth, alpha, beta):
+            if term(state, depth):
+                return self.evaluationFunction(state)
+
+            v = float('-inf')
+            for action in state.getLegalActions(0):
+                successor_value = min_value(state.generateSuccessor(0, action), depth, 1, alpha, beta)
+
+                v = max(v, successor_value)
+
+                if v > beta:
+                    return v
+
+                alpha = max(alpha, v)
+
+            return v
+
+        for action in gameState.getLegalActions(0):
+            value = min_value(gameState.generateSuccessor(0, action), 0, 1, alpha, beta)
+
+            if value > best_value:
+                best_value = value
+                best_action = action
+
+            alpha = max(alpha, best_value)
+
+        return best_action
+
         util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
