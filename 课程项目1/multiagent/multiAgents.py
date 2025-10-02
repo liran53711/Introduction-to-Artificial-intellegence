@@ -255,6 +255,51 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+
+        #对于ghost行为的预测取所有可能行动的平均值，也就是假设幽灵是随机行动的
+
+        best_value = float('-inf')
+        best_action = None
+
+
+        ghost_indexs = [i for i in range(1,gameState.getNumAgents())]
+
+        def term(state,depth):
+            return state.isWin() or state.isLose() or depth == self.depth
+
+        def ghost_exp_value(state,depth,ghost_index):
+            if term(state,depth):
+                return self.evaluationFunction(state)
+
+            v=0
+            actions = state.getLegalActions(ghost_index)
+            for action in actions:
+                if ghost_index == ghost_indexs[-1]:
+                    successor_value = max_value(state.generateSuccessor(ghost_index,action),depth+1)
+                else:
+                    successor_value = ghost_exp_value(state.generateSuccessor(ghost_index,action),depth,ghost_index+1)
+                v+=successor_value
+            return v/len(actions)
+
+        def max_value(state,depth):
+            if term(state,depth):
+                return self.evaluationFunction(state)
+            v = float('-inf')
+            for action in state.getLegalActions(0):
+                value = ghost_exp_value(state.generateSuccessor(0,action),depth,1)
+                v = max(v, value)
+            return v
+
+        for action in gameState.getLegalActions(0):
+            value = ghost_exp_value(gameState.generateSuccessor(0,action),0,1)
+            if value > best_value:
+                best_value = value
+                best_action = action
+
+        return best_action
+
+
+
         util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState: GameState):
@@ -265,6 +310,7 @@ def betterEvaluationFunction(currentGameState: GameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+
     util.raiseNotDefined()
 
 # Abbreviation
