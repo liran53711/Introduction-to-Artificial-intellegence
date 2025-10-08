@@ -336,7 +336,7 @@ def betterEvaluationFunction(currentGameState: GameState):
         capsuleScore = 20/(minCapsuleDistance) - 100 * len(capsules) #capsule 不为空才会进循环，所以不用+1
 
     else:
-        capsuleScore = 1000
+        capsuleScore = 100
 
     ghostScore = 0
     activeGhosts = 0
@@ -347,15 +347,12 @@ def betterEvaluationFunction(currentGameState: GameState):
 
         if scaredTime[i]>0:
             if distanceToGhost > scaredTime[i]:
-                ghostScore += 1000/(distanceToGhost + 1)#防止除以 0
+                ghostScore += 10000/(distanceToGhost + 1)#防止除以 0
         else:
             activeGhosts += 1
-            if distanceToGhost <=1 :
-                ghostScore -= 1000
-            if distanceToGhost <=2:
-                ghostScore -= 5
             if distanceToGhost <=3:
-                ghostScore -= 1
+                ghostScore -= 10
+
 
     comprehensiveEvaluation = basicScore + foodScore + capsuleScore + ghostScore + foodLeftPenalty
     return comprehensiveEvaluation
